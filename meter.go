@@ -169,13 +169,15 @@ func (odbi *ovndb) meterDelImp(name ...string) (*OvnCommand, error) {
 func (odbi *ovndb) meterListImp() ([]*Meter, error) {
 	odbi.cachemutex.RLock()
 	defer odbi.cachemutex.RUnlock()
-	var ListMeter []*Meter
 	cacheMeter, ok := odbi.cache[TableMeter]
 	if !ok {
 		return nil, ErrorNotFound
 	}
+	ListMeter := make([]*Meter, len(cacheMeter))
+	i := 0
 	for uuid := range cacheMeter {
-		ListMeter = append(ListMeter, odbi.rowToMeter(uuid))
+		ListMeter[i] = odbi.rowToMeter(uuid)
+		i++
 	}
 	return ListMeter, nil
 }
@@ -184,17 +186,19 @@ func (odbi *ovndb) meterListImp() ([]*Meter, error) {
 func (odbi *ovndb) meterBandsListImp() ([]*MeterBand, error) {
 	odbi.cachemutex.RLock()
 	defer odbi.cachemutex.RUnlock()
-	var ListMeterBands []*MeterBand
 	cacheMeterBands, ok := odbi.cache[TableMeterBand]
 	if !ok {
 		return nil, ErrorNotFound
 	}
+	ListMeterBands := make([]*MeterBand, len(cacheMeterBands))
+	i := 0
 	for uuid := range cacheMeterBands {
 		meterBand, err := odbi.rowToMeterBand(uuid)
 		if err != nil {
 			return nil, ErrorNotFound
 		}
-		ListMeterBands = append(ListMeterBands, meterBand)
+		ListMeterBands[i] = meterBand
+		i++
 	}
 	return ListMeterBands, nil
 }

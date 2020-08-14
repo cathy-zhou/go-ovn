@@ -149,8 +149,6 @@ func (odbi *ovndb) lsGetImp(ls string) ([]*LogicalSwitch, error) {
 }
 
 func (odbi *ovndb) lsListImp() ([]*LogicalSwitch, error) {
-	var listLS []*LogicalSwitch
-
 	odbi.cachemutex.RLock()
 	defer odbi.cachemutex.RUnlock()
 
@@ -159,8 +157,11 @@ func (odbi *ovndb) lsListImp() ([]*LogicalSwitch, error) {
 		return nil, ErrorSchema
 	}
 
+	listLS := make([]*LogicalSwitch, len(cacheLogicalSwitch))
+	i := 0
 	for uuid := range cacheLogicalSwitch {
-		listLS = append(listLS, odbi.rowToLogicalSwitch(uuid))
+		listLS[i] = odbi.rowToLogicalSwitch(uuid)
+		i++
 	}
 
 	return listLS, nil
@@ -230,7 +231,6 @@ func (odbi *ovndb) lslbDelImp(lswitch string, lb string) (*OvnCommand, error) {
 }
 
 func (odbi *ovndb) lslbListImp(lswitch string) ([]*LoadBalancer, error) {
-	var listLB []*LoadBalancer
 	odbi.cachemutex.RLock()
 	defer odbi.cachemutex.RUnlock()
 
@@ -238,7 +238,6 @@ func (odbi *ovndb) lslbListImp(lswitch string) ([]*LoadBalancer, error) {
 	if !ok {
 		return nil, ErrorSchema
 	}
-	var lsFound bool
 	for _, drows := range cacheLogicalSwitch {
 		if rlsw, ok := drows.Fields["name"].(string); ok && rlsw == lswitch {
 			lbs := drows.Fields["load_balancer"]
@@ -246,15 +245,19 @@ func (odbi *ovndb) lslbListImp(lswitch string) ([]*LoadBalancer, error) {
 				switch lbs.(type) {
 				case libovsdb.OvsSet:
 					if lb, ok := lbs.(libovsdb.OvsSet); ok {
-						for _, l := range lb.GoSet {
+						listLB := make([]*LoadBalancer, len(lb.GoSet))
+						for i, l := range lb.GoSet {
 							if lb, ok := l.(libovsdb.UUID); ok {
 								lb, err := odbi.rowToLB(lb.GoUUID)
 								if err != nil {
 									return nil, err
 								}
-								listLB = append(listLB, lb)
+								listLB[i] = lb
+							} else {
+								return nil, fmt.Errorf("type libovsdb.UUID casting failed")
 							}
 						}
+						return listLB, nil
 					} else {
 						return nil, fmt.Errorf("type libovsdb.OvsSet casting failed")
 					}
@@ -264,7 +267,7 @@ func (odbi *ovndb) lslbListImp(lswitch string) ([]*LoadBalancer, error) {
 						if err != nil {
 							return nil, err
 						}
-						listLB = append(listLB, lb)
+						return []*LoadBalancer{lb}, nil
 					} else {
 						return nil, fmt.Errorf("type libovsdb.UUID casting failed")
 					}
@@ -272,14 +275,10 @@ func (odbi *ovndb) lslbListImp(lswitch string) ([]*LoadBalancer, error) {
 					return nil, fmt.Errorf("Unsupport type found in ovsdb rows")
 				}
 			}
-			lsFound = true
-			break
+			return []*LoadBalancer{}, nil
 		}
 	}
-	if !lsFound {
-		return nil, ErrorNotFound
-	}
-	return listLB, nil
+	return nil, ErrorNotFound
 }
 
 func (odbi *ovndb) lsExtIdsAddImp(ls string, external_ids map[string]string) (*OvnCommand, error) {

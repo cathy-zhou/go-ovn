@@ -17,6 +17,7 @@
 package goovn
 
 import (
+	"fmt"
 	"github.com/ebay/libovsdb"
 )
 
@@ -300,8 +301,6 @@ func (odbi *ovndb) rowToACL(uuid string) *ACL {
 
 // Get all acl by lswitch
 func (odbi *ovndb) aclListImp(lsw string) ([]*ACL, error) {
-	var listACL []*ACL
-
 	odbi.cachemutex.RLock()
 	defer odbi.cachemutex.RUnlock()
 
@@ -309,7 +308,6 @@ func (odbi *ovndb) aclListImp(lsw string) ([]*ACL, error) {
 	if !ok {
 		return nil, ErrorNotFound
 	}
-	var lsFound bool
 	for _, drows := range cacheLogicalSwitch {
 		if rlsw, ok := drows.Fields["name"].(string); ok && rlsw == lsw {
 			acls := drows.Fields["acls"]
@@ -317,26 +315,30 @@ func (odbi *ovndb) aclListImp(lsw string) ([]*ACL, error) {
 				switch acls.(type) {
 				case libovsdb.OvsSet:
 					if as, ok := acls.(libovsdb.OvsSet); ok {
-						for _, a := range as.GoSet {
+						listACL := make([]*ACL, len(as.GoSet))
+						for i, a := range as.GoSet {
 							if va, ok := a.(libovsdb.UUID); ok {
 								ta := odbi.rowToACL(va.GoUUID)
-								listACL = append(listACL, ta)
+								listACL[i] = ta
+							} else {
+								return nil, fmt.Errorf("type libovsdb.UUID casting failed")
 							}
 						}
+						return listACL, nil
+					} else {
+						return nil, fmt.Errorf("type libovsdb.OvsSet casting failed")
 					}
 				case libovsdb.UUID:
 					if va, ok := acls.(libovsdb.UUID); ok {
 						ta := odbi.rowToACL(va.GoUUID)
-						listACL = append(listACL, ta)
+						return []*ACL{ta}, nil
+					} else {
+						return nil, fmt.Errorf("type libovsdb.UUID casting failed")
 					}
 				}
 			}
-			lsFound = true
-			break
+			return []*ACL{}, nil
 		}
 	}
-	if !lsFound {
-		return nil, ErrorNotFound
-	}
-	return listACL, nil
+	return nil, ErrorNotFound
 }

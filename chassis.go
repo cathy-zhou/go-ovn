@@ -124,8 +124,6 @@ func (odbi *ovndb) chassisDelImp(name string) (*OvnCommand, error) {
 }
 
 func (odbi *ovndb) chassisListImp() ([]*Chassis, error) {
-	var listChassis []*Chassis
-
 	odbi.cachemutex.RLock()
 	defer odbi.cachemutex.RUnlock()
 
@@ -135,12 +133,15 @@ func (odbi *ovndb) chassisListImp() ([]*Chassis, error) {
 		return nil, ErrorSchema
 	}
 
+	listChassis := make([]*Chassis, len(cacheChassis))
+	i := 0
 	for uuid := range cacheChassis {
 		ch, err := odbi.rowToChassis(uuid)
 		if err != nil {
 			return nil, err
 		}
-		listChassis = append(listChassis, ch)
+		listChassis[i] = ch
+		i++
 	}
 	return listChassis, nil
 }
