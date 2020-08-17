@@ -187,11 +187,11 @@ func (odbi *ovndb) qosListImp(ls string) ([]*QoS, error) {
 				switch qosrules.(type) {
 				case libovsdb.OvsSet:
 					if ps, ok := qosrules.(libovsdb.OvsSet); ok {
-						listQos := make([]*QoS, len(ps.GoSet))
-						for i, p := range ps.GoSet {
+						listQos := make([]*QoS, 0, len(ps.GoSet))
+						for _, p := range ps.GoSet {
 							if vp, ok := p.(libovsdb.UUID); ok {
 								tp := odbi.rowToQoS(vp.GoUUID)
-								listQos[i] = tp
+								listQos = append(listQos, tp)
 							} else {
 								return nil, fmt.Errorf("type libovsdb.UUID casting failed")
 							}

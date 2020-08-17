@@ -223,11 +223,9 @@ func (odbi *ovndb) lrListImp() ([]*LogicalRouter, error) {
 		return nil, ErrorNotFound
 	}
 
-	listLR := make([]*LogicalRouter, len(cacheLogicalRouter))
-	i := 0
+	listLR := make([]*LogicalRouter, 0, len(cacheLogicalRouter))
 	for uuid := range cacheLogicalRouter {
-		listLR[i] = odbi.rowToLogicalRouter(uuid)
-		i++
+		listLR = append(listLR, odbi.rowToLogicalRouter(uuid))
 	}
 
 	return listLR, nil
@@ -311,14 +309,14 @@ func (odbi *ovndb) lrlbListImp(lr string) ([]*LoadBalancer, error) {
 				switch lbs.(type) {
 				case libovsdb.OvsSet:
 					if lb, ok := lbs.(libovsdb.OvsSet); ok {
-						listLB := make([]*LoadBalancer, len(lb.GoSet))
-						for i, l := range lb.GoSet {
+						listLB := make([]*LoadBalancer, 0, len(lb.GoSet))
+						for _, l := range lb.GoSet {
 							if lb, ok := l.(libovsdb.UUID); ok {
 								lb, err := odbi.rowToLB(lb.GoUUID)
 								if err != nil {
 									return nil, err
 								}
-								listLB[i] = lb
+								listLB = append(listLB, lb)
 							} else {
 								return nil, fmt.Errorf("type libovsdb.UUID casting failed")
 							}

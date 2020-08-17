@@ -209,11 +209,11 @@ func (odbi *ovndb) lrsrListImp(lr string) ([]*LogicalRouterStaticRoute, error) {
 				switch staticRoutes.(type) {
 				case libovsdb.OvsSet:
 					if sr, ok := staticRoutes.(libovsdb.OvsSet); ok {
-						listLRSR := make([]*LogicalRouterStaticRoute, len(sr.GoSet))
-						for i, s := range sr.GoSet {
+						listLRSR := make([]*LogicalRouterStaticRoute, 0, len(sr.GoSet))
+						for _, s := range sr.GoSet {
 							if sruid, ok := s.(libovsdb.UUID); ok {
 								rsr := odbi.rowToLogicalRouterStaticRoute(sruid.GoUUID)
-								listLRSR[i] = rsr
+								listLRSR = append(listLRSR, rsr)
 							} else {
 								return nil, fmt.Errorf("type libovsdb.UUID casting failed")
 							}

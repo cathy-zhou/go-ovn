@@ -121,8 +121,7 @@ func (odbi *ovndb) asListImp() ([]*AddressSet, error) {
 		return nil, ErrorSchema
 	}
 
-	listAS := make([]*AddressSet, len(cacheAddressSet))
-	i := 0
+	listAS := make([]*AddressSet, 0, len(cacheAddressSet))
 	for uuid, drows := range cacheAddressSet {
 		ta := &AddressSet{
 			UUID:       uuid,
@@ -145,8 +144,7 @@ func (odbi *ovndb) asListImp() ([]*AddressSet, error) {
 			}
 		}
 		ta.Addresses = addresses
-		listAS[i] = ta
-		i++
+		listAS = append(listAS, ta)
 	}
 	return listAS, nil
 }

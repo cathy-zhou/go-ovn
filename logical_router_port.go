@@ -198,11 +198,11 @@ func (odbi *ovndb) lrpListImp(lr string) ([]*LogicalRouterPort, error) {
 				switch ports.(type) {
 				case libovsdb.OvsSet:
 					if ps, ok := ports.(libovsdb.OvsSet); ok {
-						listLRP := make([]*LogicalRouterPort, len(ps.GoSet))
-						for i, p := range ps.GoSet {
+						listLRP := make([]*LogicalRouterPort, 0, len(ps.GoSet))
+						for _, p := range ps.GoSet {
 							if vp, ok := p.(libovsdb.UUID); ok {
 								tp := odbi.rowToLogicalRouterPort(vp.GoUUID)
-								listLRP[i] = tp
+								listLRP = append(listLRP, tp)
 							} else {
 								return nil, fmt.Errorf("type libovsdb.UUID casting failed")
 							}

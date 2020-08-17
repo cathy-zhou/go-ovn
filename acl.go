@@ -315,11 +315,11 @@ func (odbi *ovndb) aclListImp(lsw string) ([]*ACL, error) {
 				switch acls.(type) {
 				case libovsdb.OvsSet:
 					if as, ok := acls.(libovsdb.OvsSet); ok {
-						listACL := make([]*ACL, len(as.GoSet))
-						for i, a := range as.GoSet {
+						listACL := make([]*ACL, 0, len(as.GoSet))
+						for _, a := range as.GoSet {
 							if va, ok := a.(libovsdb.UUID); ok {
 								ta := odbi.rowToACL(va.GoUUID)
-								listACL[i] = ta
+								listACL = append(listACL, ta)
 							} else {
 								return nil, fmt.Errorf("type libovsdb.UUID casting failed")
 							}

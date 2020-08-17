@@ -411,14 +411,14 @@ func (odbi *ovndb) lspListImp(lsw string) ([]*LogicalSwitchPort, error) {
 				switch ports.(type) {
 				case libovsdb.OvsSet:
 					if ps, ok := ports.(libovsdb.OvsSet); ok {
-						listLSP := make([]*LogicalSwitchPort, len(ps.GoSet))
-						for i, p := range ps.GoSet {
+						listLSP := make([]*LogicalSwitchPort, 0, len(ps.GoSet))
+						for _, p := range ps.GoSet {
 							if vp, ok := p.(libovsdb.UUID); ok {
 								tp, err := odbi.rowToLogicalPort(vp.GoUUID)
 								if err != nil {
 									return nil, fmt.Errorf("Failed to get logical port: %s", err)
 								}
-								listLSP[i] = tp
+								listLSP = append(listLSP, tp)
 							} else {
 								return nil, fmt.Errorf("type libovsdb.UUID casting failed")
 							}

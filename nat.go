@@ -234,10 +234,10 @@ func (odbi *ovndb) lrNatListImp(lr string) ([]*NAT, error) {
 		return nil, err
 	}
 
-	natlist := make([]*NAT, len(LRs[0].NAT))
+	natlist := make([]*NAT, 0, len(LRs[0].NAT))
 
-	for i, v := range LRs[0].NAT {
-		natlist[i] = odbi.rowToNat(v)
+	for _, v := range LRs[0].NAT {
+		natlist = append(natlist, odbi.rowToNat(v))
 	}
 
 	return natlist, nil

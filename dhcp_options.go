@@ -152,11 +152,9 @@ func (odbi *ovndb) dhcpOptionsListImp() ([]*DHCPOptions, error) {
 		return nil, ErrorSchema
 	}
 
-	listDHCP := make([]*DHCPOptions, len(cacheDHCPOptions))
-	i := 0
+	listDHCP := make([]*DHCPOptions, 0, len(cacheDHCPOptions))
 	for uuid := range cacheDHCPOptions {
-		listDHCP[i] = odbi.rowToDHCPOptions(uuid)
-		i++
+		listDHCP = append(listDHCP, odbi.rowToDHCPOptions(uuid))
 	}
 	return listDHCP, nil
 }

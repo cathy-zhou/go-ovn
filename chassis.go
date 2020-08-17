@@ -133,15 +133,13 @@ func (odbi *ovndb) chassisListImp() ([]*Chassis, error) {
 		return nil, ErrorSchema
 	}
 
-	listChassis := make([]*Chassis, len(cacheChassis))
-	i := 0
+	listChassis := make([]*Chassis, 0, len(cacheChassis))
 	for uuid := range cacheChassis {
 		ch, err := odbi.rowToChassis(uuid)
 		if err != nil {
 			return nil, err
 		}
-		listChassis[i] = ch
-		i++
+		listChassis = append(listChassis, ch)
 	}
 	return listChassis, nil
 }

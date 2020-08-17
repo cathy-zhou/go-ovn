@@ -173,11 +173,9 @@ func (odbi *ovndb) meterListImp() ([]*Meter, error) {
 	if !ok {
 		return nil, ErrorNotFound
 	}
-	ListMeter := make([]*Meter, len(cacheMeter))
-	i := 0
+	ListMeter := make([]*Meter, 0, len(cacheMeter))
 	for uuid := range cacheMeter {
-		ListMeter[i] = odbi.rowToMeter(uuid)
-		i++
+		ListMeter = append(ListMeter, odbi.rowToMeter(uuid))
 	}
 	return ListMeter, nil
 }
@@ -190,15 +188,13 @@ func (odbi *ovndb) meterBandsListImp() ([]*MeterBand, error) {
 	if !ok {
 		return nil, ErrorNotFound
 	}
-	ListMeterBands := make([]*MeterBand, len(cacheMeterBands))
-	i := 0
+	ListMeterBands := make([]*MeterBand, 0, len(cacheMeterBands))
 	for uuid := range cacheMeterBands {
 		meterBand, err := odbi.rowToMeterBand(uuid)
 		if err != nil {
 			return nil, ErrorNotFound
 		}
-		ListMeterBands[i] = meterBand
-		i++
+		ListMeterBands= append(ListMeterBands, meterBand)
 	}
 	return ListMeterBands, nil
 }

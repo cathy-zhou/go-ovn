@@ -157,11 +157,9 @@ func (odbi *ovndb) lsListImp() ([]*LogicalSwitch, error) {
 		return nil, ErrorSchema
 	}
 
-	listLS := make([]*LogicalSwitch, len(cacheLogicalSwitch))
-	i := 0
+	listLS := make([]*LogicalSwitch, 0, len(cacheLogicalSwitch))
 	for uuid := range cacheLogicalSwitch {
-		listLS[i] = odbi.rowToLogicalSwitch(uuid)
-		i++
+		listLS = append(listLS, odbi.rowToLogicalSwitch(uuid))
 	}
 
 	return listLS, nil
@@ -245,14 +243,14 @@ func (odbi *ovndb) lslbListImp(lswitch string) ([]*LoadBalancer, error) {
 				switch lbs.(type) {
 				case libovsdb.OvsSet:
 					if lb, ok := lbs.(libovsdb.OvsSet); ok {
-						listLB := make([]*LoadBalancer, len(lb.GoSet))
-						for i, l := range lb.GoSet {
+						listLB := make([]*LoadBalancer, 0, len(lb.GoSet))
+						for _, l := range lb.GoSet {
 							if lb, ok := l.(libovsdb.UUID); ok {
 								lb, err := odbi.rowToLB(lb.GoUUID)
 								if err != nil {
 									return nil, err
 								}
-								listLB[i] = lb
+								listLB = append(listLB, lb)
 							} else {
 								return nil, fmt.Errorf("type libovsdb.UUID casting failed")
 							}

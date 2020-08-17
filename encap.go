@@ -55,14 +55,14 @@ func (odbi *ovndb) encapListImp(chassisName string) ([]*Encap, error) {
 					}
 				case libovsdb.OvsSet:
 					if en, ok := enc.(libovsdb.OvsSet); ok {
-						encaps := make([]*Encap, len(en.GoSet))
-						for i, e := range en.GoSet {
+						encaps := make([]*Encap, 0, len(en.GoSet))
+						for _, e := range en.GoSet {
 							if euid, ok := e.(libovsdb.UUID); ok {
 								enc, err := odbi.rowToEncap(euid.GoUUID)
 								if err != nil {
 									return nil, err
 								}
-								encaps[i] = enc
+								encaps = append(encaps, enc)
 							} else {
 								return nil, fmt.Errorf("type libovsdb.UUID casting failed")
 							}
